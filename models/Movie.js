@@ -6,7 +6,8 @@ director_id:Schema.Types.ObjectId,
 title:
 {
     type:String,
-    required:true
+    required:[true,'`{PATH}` alanı zorunludur'],
+    minlength:[5,'`{PATH}` alanı (`{VALUE}`) değeri {MINLENGTH} karakterden küçük olamaz']
 },
 category:String,
 country:String,

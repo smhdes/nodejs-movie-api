@@ -9,8 +9,8 @@ const {start_year,end_year}=req.params;
   const promise=Movie.find({
     year:
     {
-      "$gte":parseInt(start_year),
-      "$lte":parseInt(end_year)
+      "$gte":parseInt(start_year), //grather than and equal
+      "$lte":parseInt(end_year)   // 
     }
   });
 promise.then((data) => {
@@ -39,7 +39,20 @@ promise.then((result) => {
 router.get('/',(req,res)=>
 {
 
-const promise=Movie.find({});
+const promise=Movie.aggregate([
+  {
+    $lookup:
+    {
+      from:'directors',
+      localField:'director_id',
+      foreignField:'_id',
+      as:'director'
+    }
+  },
+  {
+    $unwind:'$director'
+  }
+]);
 promise.then((result) => {
   res.json(result);
 }).catch((err) => {
@@ -84,25 +97,26 @@ promise.then((movie)=>
 {
 res.json(err);
 });
-
-
 });
 
 
-router.post('/', (req, res, next)=> {
-  const {title,imdb_score,category,country,year}=req.body;
 
-  //Eğer tek tek eşleştirme yaparak yada verilerin üzerinde işlem yaparak kaydetmek
-  //istersek bu yöntemi kullanabiliriz
+// Add movie
+// router.post('/', (req, res, next)=> {
+//   const {director_id,title,imdb_score,category,country,year}=req.body;
+
+  // Eğer tek tek eşleştirme yaparak yada verilerin üzerinde işlem yaparak kaydetmek
+  // istersek bu yöntemi kullanabiliriz
 //   const movie=new Movie({
 // title:title,
 // imdb_score:imdb_score,
 // category:category,
 // country:country,
-// year:year
+// year:year,
+// director_id:director_id
 //   });
 
-const movie=new Movie(req.body);
+//const movie=new Movie(req.body);
 // Bu şekilde callback fonksiyonu ile de kayıt yapılabilir.
 // Ama genel kullanım şekli global Promise yapısıdır.
 // movie.save((err,data)=>
@@ -114,13 +128,13 @@ const movie=new Movie(req.body);
 
 
 // Global Promise yapısı ile veri kaydetme
-const promise=movie.save();
-promise.then((data) => {
-  res.json(data);
-}).catch((err) => {
-  res.json(err);
-});
- });
+// const promise=movie.save();
+// promise.then((data) => {
+//   res.json(data);
+// }).catch((err) => {
+//   res.json(err);
+// });
+//  });
 
 
  //Delete movie
@@ -140,4 +154,18 @@ promise.then((data) => {
 
 });
 });
+
+//Add movies
+router.post('/',(req,res,next)=>
+{
+const movie=new Movie(req.body);
+const promise=movie.save();
+promise.then((movie) => {
+    res.json(movie);
+}).catch((err) => {
+    res.json(err);
+});
+});
+
+
 module.exports = router;
